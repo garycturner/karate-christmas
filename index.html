@@ -4,23 +4,45 @@
   <meta charset="UTF-8" />
   <title>12 Days of Karate Christmas</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="style.css?v=1" />
+  <!-- Elegant, traditional feel -->
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;600;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css?v=10" />
 </head>
 <body>
-  <header>
-    <h1>12 Days of Karate Christmas</h1>
-    <p>Guided by Sensei Santa • December 13–24</p>
-  </header>
+  <!-- snow canvas sits behind everything -->
+  <canvas id="snow" class="snow-canvas" aria-hidden="true"></canvas>
 
-  <div id="preview-banner" style="display:none;background:#fff3cd;border-bottom:1px solid #e0c66b;padding:8px 12px;text-align:center;">
-    🔧 Preview Mode is ON – all days unlocked for testing.
+  <div class="page-wrap">
+    <header class="site-header">
+      <div class="title-wrap">
+        <h1 class="brand-kanji">空手</h1>
+        <div class="titles">
+          <h1>12 Days of Karate Christmas</h1>
+          <p class="subtitle">Guided by <span class="santa">Sensei Santa</span> • December 13–24</p>
+        </div>
+      </div>
+    </header>
+
+    <!-- Preview banner (only shown when PREVIEW_MODE=true in script.js) -->
+    <div id="preview-banner" role="status" class="preview-banner" style="display:none;">
+      🔧 Preview Mode is ON – all days are unlocked for testing. (Turn off before launch.)
+    </div>
+
+    <main class="content">
+      <section class="calendar-wrap">
+        <h2 class="section-heading">Advent Dojo Calendar</h2>
+        <div id="calendar" class="calendar" aria-live="polite"></div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="seal">🈶</div>
+      <p>Karate Christmas Dojo • Powered by Spirit & Snow</p>
+    </footer>
   </div>
 
-  <main id="calendar" aria-live="polite"></main>
-
-  <footer><p>Karate Christmas Dojo • Powered by Spirit & Snow</p></footer>
-
-  <div id="modal" class="modal" hidden>
+  <!-- Modal -->
+  <div id="modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" hidden>
     <div class="modal-card" id="modal-card">
       <button class="close" id="modal-close" aria-label="Close">×</button>
       <h2 id="modal-title"></h2>
@@ -30,14 +52,17 @@
         <h3>🥊 Physical Challenge</h3>
         <div id="modal-physical"></div>
       </div>
+
       <div class="section">
         <h3>🧠 Knowledge & Spirit</h3>
         <div id="modal-knowledge"></div>
       </div>
+
       <div class="section">
         <h3>🎄 Festive Fun</h3>
         <div id="modal-festive"></div>
       </div>
+
       <div class="section santa">
         <h3>🎅 Sensei Santa says</h3>
         <blockquote id="modal-santa"></blockquote>
@@ -49,6 +74,10 @@
     </div>
   </div>
 
-  <script src="script.js?v=1"></script>
+  <!-- Sounds (optional – keep for later, won’t block if missing) -->
+  <audio id="sound-chime" src="assets/sounds/chime.mp3" preload="auto"></audio>
+  <audio id="sound-complete" src="assets/sounds/taiko.mp3" preload="auto"></audio>
+
+  <script src="script.js?v=10"></script>
 </body>
 </html>
