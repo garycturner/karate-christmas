@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>12 Days of Karate Christmas</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="style.css?v=1" />
+</head>
+<body>
+  <header>
+    <h1>12 Days of Karate Christmas</h1>
+    <p>Guided by Sensei Santa • December 13–24</p>
+  </header>
+
+  <div id="preview-banner" style="display:none;background:#fff3cd;border-bottom:1px solid #e0c66b;padding:8px 12px;text-align:center;">
+    🔧 Preview Mode is ON – all days unlocked for testing.
+  </div>
+
+  <main id="calendar" aria-live="polite"></main>
+
+  <footer><p>Karate Christmas Dojo • Powered by Spirit & Snow</p></footer>
+
+  <div id="modal" class="modal" hidden>
+    <div class="modal-card" id="modal-card">
+      <button class="close" id="modal-close" aria-label="Close">×</button>
+      <h2 id="modal-title"></h2>
+      <p class="belt" id="modal-belt"></p>
+
+      <div class="section">
+        <h3>🥊 Physical Challenge</h3>
+        <div id="modal-physical"></div>
+      </div>
+      <div class="section">
+        <h3>🧠 Knowledge & Spirit</h3>
+        <div id="modal-knowledge"></div>
+      </div>
+      <div class="section">
+        <h3>🎄 Festive Fun</h3>
+        <div id="modal-festive"></div>
+      </div>
+      <div class="section santa">
+        <h3>🎅 Sensei Santa says</h3>
+        <blockquote id="modal-santa"></blockquote>
+      </div>
+
+      <div class="actions">
+        <button id="complete-btn" class="primary" type="button">Mark Day Complete</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js?v=1"></script>
+</body>
+</html>
