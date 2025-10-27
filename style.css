@@ -1,26 +1,147 @@
-:root{--paper:#f2f0ec;--ink:#222;--line:#444;--tile:#fff}
+/* ========== Base / Theme ========== */
+:root{
+  --paper:#f5f3ed;
+  --ink:#1e1e1b;
+  --line:#2b2b27;
+  --accent:#0f5132; /* deep pine */
+  --gold:#b0893e;
+  --tile:#ffffff;
+}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
-body{margin:0;font-family:system-ui,Segoe UI,Arial,sans-serif;background:var(--paper);color:var(--ink);text-align:center}
-header{padding:24px 12px;border-bottom:2px solid var(--line)}
-h1{margin:0 0 6px}
 
-#calendar{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;padding:20px;max-width:960px;margin:0 auto}
-.day-tile{background:var(--tile);border:2px solid var(--ink);padding:18px;border-radius:10px;min-height:110px;cursor:pointer;transition:transform .08s,box-shadow .08s}
-.day-tile:hover{transform:scale(1.02);box-shadow:0 4px 14px rgba(0,0,0,.08)}
-.day-tile.locked{opacity:.55;cursor:not-allowed;border-style:dashed}
-.day-title{font-weight:700}
-.day-date{font-size:.92rem;color:#555}
-.badge{position:absolute;top:8px;right:8px;font-size:.85rem;padding:4px 8px;border-radius:999px;border:1px solid var(--ink);background:#fff}
-.badge.done{background:#e6f4ea;border-color:#18794e;color:#18794e}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  color:var(--ink);
+  background: radial-gradient(1200px 800px at 50% -10%, rgba(255,255,255,.7), rgba(245,243,237,1)),
+              repeating-linear-gradient(0deg, #faf7f0, #faf7f0 3px, #f3efe7 3px, #f3efe7 6px);
+}
 
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:grid;place-items:center;padding:12px}
-.modal-card{width:min(860px,96vw);background:#fff;border:2px solid #111;border-radius:14px;text-align:left;padding:16px 16px 12px;position:relative}
-.modal-card h2{margin:0 0 4px}.belt{margin:0 0 10px;color:#333}
-.section{border-top:1px solid #ddd;padding-top:10px;margin-top:12px}
-.section h3{margin:0 0 6px}
-.santa blockquote{margin:6px 0;padding-left:10px;border-left:3px solid #063;color:#063}
-.close{position:absolute;right:10px;top:6px;background:transparent;border:none;font-size:28px;cursor:pointer}
-.actions{display:flex;justify-content:flex-end;margin-top:12px}
-.primary{background:#0c6;color:#081;border:2px solid #081;padding:10px 14px;border-radius:8px;font-weight:700;cursor:pointer}
-@media(max-width:640px){#calendar{grid-template-columns:repeat(2,minmax(0,1fr))}}
+/* Subtle tatami/rice-paper feel */
+.page-wrap{
+  min-height:100%;
+  display:flex;
+  flex-direction:column;
+  position:relative;
+}
+
+/* Snow canvas behind content */
+.snow-canvas{
+  position:fixed; inset:0; z-index:0; pointer-events:none;
+}
+
+/* ========== Header ========== */
+.site-header{
+  position:relative;
+  z-index:1;
+  padding:28px 16px 20px;
+  border-bottom:2px solid rgba(0,0,0,.1);
+  backdrop-filter: blur(2px);
+}
+.title-wrap{
+  max-width:1100px; margin:0 auto; display:flex; align-items:center; gap:14px;
+}
+.brand-kanji{
+  font-family: "Noto Serif JP", serif;
+  font-weight:700;
+  font-size:48px;
+  margin:0;
+  line-height:1;
+  color:#222;
+}
+.titles h1{
+  margin:0;
+  font-family: "Noto Serif JP", serif;
+  font-weight:700;
+  letter-spacing:.5px;
+}
+.subtitle{ margin:.25rem 0 0; color:#4a4a44 }
+.subtitle .santa{ font-weight:700; color:var(--accent) }
+
+.preview-banner{
+  position:relative; z-index:1;
+  background:#fff3cd; border-bottom:1px solid #e0c66b; padding:8px 12px; text-align:center;
+  font-size:.95rem;
+}
+
+/* ========== Calendar ========== */
+.content{ flex:1; display:flex; justify-content:center; }
+.calendar-wrap{ width:100%; max-width:1100px; padding:24px 16px 60px; z-index:1 }
+.section-heading{
+  font-family:"Noto Serif JP", serif;
+  margin:0 0 14px; font-size:1.25rem; color:#333; letter-spacing:.3px
+}
+.calendar{
+  display:grid; grid-template-columns:repeat(3, minmax(0, 1fr));
+  gap:18px;
+}
+@media (max-width: 800px){ .calendar{ grid-template-columns:repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 520px){ .calendar{ grid-template-columns:1fr; } }
+
+/* Shikishi-style tiles */
+.day-tile{
+  position:relative;
+  background: var(--tile);
+  border-radius: 18px;
+  padding: 18px 18px 16px;
+  cursor:pointer;
+  transition: transform .12s ease, box-shadow .12s ease;
+  box-shadow:
+    inset 0 0 0 2px var(--line),
+    0 10px 26px rgba(0,0,0,.10);
+  isolation:isolate;
+}
+.day-tile::before{
+  /* brushy border via pseudo element */
+  content:"";
+  position:absolute; inset:0;
+  border-radius:18px;
+  border:2px solid rgba(0,0,0,.18);
+  mix-blend-mode:multiply;
+  pointer-events:none;
+}
+.day-tile:hover{ transform: translateY(-2px) scale(1.01); box-shadow: inset 0 0 0 2px var(--line), 0 18px 40px rgba(0,0,0,.14) }
+.day-tile.locked{ opacity:.55; cursor:not-allowed; box-shadow: inset 0 0 0 2px rgba(0,0,0,.25); }
+.day-tile .day-title{
+  font-weight:700; font-family:"Noto Serif JP", serif; font-size:1.15rem; margin-bottom:6px;
+}
+.day-tile .day-date{ color:#555; font-size:.95rem }
+.badge{
+  position:absolute; top:10px; right:10px;
+  font-size:.85rem; padding:4px 10px;
+  border-radius:999px; border:1px solid var(--line); background:#fff;
+}
+.badge.done{ background:#e6f4ea; border-color:#18794e; color:#18794e }
+
+/* ========== Modal ========== */
+.modal{ position:fixed; inset:0; background:rgba(0,0,0,.45); display:grid; place-items:center; padding:12px; z-index:2 }
+.modal-card{
+  width:min(860px, 96vw);
+  background:#fff;
+  border:2px solid #111;
+  border-radius:16px;
+  padding:20px 20px 14px;
+  position:relative;
+  box-shadow: 0 20px 60px rgba(0,0,0,.35);
+}
+.modal-card h2{ margin:0 0 6px; font-family:"Noto Serif JP", serif }
+.belt{ margin:0 0 12px; color:#333 }
+.section{ border-top:1px solid #e6e3da; padding-top:10px; margin-top:12px }
+.section h3{ margin:0 0 6px; font-weight:700 }
+.santa blockquote{ margin:8px 0 0; padding-left:12px; border-left:3px solid var(--accent); color:#0b5b3b }
+.close{ position:absolute; right:10px; top:6px; background:transparent; border:none; font-size:28px; cursor:pointer }
+.actions{ display:flex; justify-content:flex-end; margin-top:12px }
+.primary{ background:#0c6; color:#072; border:2px solid #072; padding:10px 14px; border-radius:10px; font-weight:700; cursor:pointer }
+.primary:hover{ transform: translateY(-1px) }
+
+/* ========== Footer ========== */
+.site-footer{ text-align:center; padding:22px 12px; color:#585750; position:relative; z-index:1 }
+.seal{ font-size:20px; }
+
+/* Accessibility: respect reduced motion */
+@media (prefers-reduced-motion: reduce){
+  .day-tile, .primary{ transition:none }
+  .snow-canvas{ display:none !important; }
+}
