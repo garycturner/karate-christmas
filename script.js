@@ -59,3 +59,59 @@ document.addEventListener("keydown",(e)=>{ if(e.key==="Escape") closeModal(); })
   const data=await loadContent(); window.__kcDays=data.days;
   renderCalendar(window.__kcDays, loadProgress());
 })();
+/* ========= Festive Snow (mouse-responsive, respects reduced-motion) ========= */
+(function snow() {
+  const prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const canvas = document.getElementById('snow');
+  if (!canvas || prefersReduced) return;
+
+  const ctx = canvas.getContext('2d');
+  let width = canvas.width = window.innerWidth;
+  let height = canvas.height = window.innerHeight;
+  let windX = 0; // mouse-driven wind
+  const flakes = [];
+  const FLAKES = Math.min(160, Math.floor((width * height) / 12000)); // scale with viewport
+
+  function makeFlake() {
+    return {
+      x: Math.random() * width,
+      y: Math.random() * height,
+      r: Math.random() * 2 + 1.2,          // radius 1.2–3.2
+      v: Math.random() * 0.6 + 0.4,        // fall speed
+      drift: (Math.random() * 0.6 - 0.3)   // side drift
+    };
+  }
+
+  for (let i = 0; i < FLAKES; i++) flakes.push(makeFlake());
+
+  function step() {
+    ctx.clearRect(0,0,width,height);
+    ctx.fillStyle = 'rgba(255,255,255,0.9)';
+    for (const f of flakes) {
+      f.y += f.v;
+      f.x += f.drift + windX * 0.05;
+
+      if (f.y > height + 5) { f.y = -5; f.x = Math.random() * width; }
+      if (f.x > width + 5) f.x = -5;
+      if (f.x < -5) f.x = width + 5;
+
+      ctx.beginPath();
+      ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    requestAnimationFrame(step);
+  }
+  step();
+
+  // Parallax-y wind from mouse
+  window.addEventListener('mousemove', (e) => {
+    const mid = width / 2;
+    const dist = (e.clientX - mid) / mid; // -1..1
+    windX = dist * 1.5; // gentle
+  });
+
+  window.addEventListener('resize', () => {
+    width = canvas.width = window.innerWidth;
+    height = canvas.height = window.innerHeight;
+  });
+})();
