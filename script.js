@@ -9,7 +9,7 @@ const PREVIEW_MODE = true;       // <-- set to false before launch
 const STORAGE_KEY = "kc12-progress";     // completion per day
 const CERT_SHOWN_KEY = "kc12-cert-shown";// show certificate modal once when earned
 // Path to your PDF in the repo:
-const CERT_PATH = "certificates/christmas_karate_black_belt_certificate.pdf";
+const CERT_PATH = "certificates/christmas_cert.pdf";
 // ----------------------------
 
 // ---- Date helpers (Europe/London) ----
