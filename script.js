@@ -3,23 +3,21 @@
 // =====================
 
 // ---------- CONFIG ----------
-const START_DAY = 13;            // Dec 13 unlock for Day 1
+const START_DAY = 13;                // Dec 13 unlock for Day 1
 const TOTAL_DAYS = 12;
-const PREVIEW_MODE = true;       // <-- set to false before launch
-const STORAGE_KEY = "kc12-progress";     // completion per day
-const CERT_SHOWN_KEY = "kc12-cert-shown";// show certificate modal once when earned
+const PREVIEW_MODE = true;           // <-- set to false before launch
+const STORAGE_KEY = "kc12-progress"; // completion per day
+const CERT_SHOWN_KEY = "kc12-cert-shown"; // show certificate modal once when earned
 
 // Build a base path that works on GitHub Project Pages (e.g., /12DaysofKarateChristmas/)
-// If there's a <base> tag, use it; otherwise compute from current path.
 const BASE_PATH = (document.querySelector('base')?.href)
   ? new URL(document.querySelector('base').href).pathname
   : (function () {
-      // Strip filename from the current path (keeps trailing slash)
       const p = window.location.pathname;
       return p.endsWith('/') ? p : p.replace(/[^/]*$/, '');
     })();
 
-// Absolute URL to your PDF (adjust filename if needed)
+// Absolute URL to your certificate PDF (adjust filename if needed)
 const CERT_PATH = new URL('certificates/christmas_cert.pdf', window.location.origin + BASE_PATH).toString();
 // ----------------------------
 
@@ -53,6 +51,9 @@ async function loadContent() {
 }
 
 // ---- Sounds (safe no-ops if files missing) ----
+// Make sure you added in index.html:
+// <audio id="sound-open" src="assets/sounds/open.mp3" preload="auto"></audio>
+// <audio id="sound-complete" src="assets/sounds/complete.mp3" preload="auto"></audio>
 function playSound(id) {
   const el = document.getElementById(id);
   if (!el) return;
@@ -136,7 +137,7 @@ function openModal(day, index, progress) {
 
   const modal = document.getElementById("modal");
   modal.hidden = false;
-  playSound("sound-chime");
+  playSound("sound-open");
 }
 function closeModal() {
   const modal = document.getElementById("modal");
