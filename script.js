@@ -9,6 +9,10 @@ const PREVIEW_MODE = true;           // <-- set to false before launch
 const STORAGE_KEY = "kc12-progress"; // completion per day
 const CERT_SHOWN_KEY = "kc12-cert-shown"; // show certificate modal once when earned
 
+// Absolute URLs for sounds (served from your karate-christmas repo)
+const SOUND_OPEN_URL = "https://garycturner.github.io/karate-christmas/assets/sounds/open.mp3";
+const SOUND_COMPLETE_URL = "https://garycturner.github.io/karate-christmas/assets/sounds/complete.mp3";
+
 // Build a base path that works on GitHub Project Pages (e.g., /12DaysofKarateChristmas/)
 const BASE_PATH = (document.querySelector('base')?.href)
   ? new URL(document.querySelector('base').href).pathname
@@ -50,14 +54,31 @@ async function loadContent() {
   return res.json();
 }
 
-// ---- Sounds (safe no-ops if files missing) ----
-// Make sure you added in index.html:
-// <audio id="sound-open" src="assets/sounds/open.mp3" preload="auto"></audio>
-// <audio id="sound-complete" src="assets/sounds/complete.mp3" preload="auto"></audio>
+// ---- Sounds (safe, with console logging) ----
+// Make sure index.html has:
+// <audio id="sound-open" preload="auto"></audio>
+// <audio id="sound-complete" preload="auto"></audio>
+function ensureAudioSrcs() {
+  const ao = document.getElementById("sound-open");
+  const ac = document.getElementById("sound-complete");
+  if (ao && !ao.src) ao.src = SOUND_OPEN_URL;
+  if (ac && !ac.src) ac.src = SOUND_COMPLETE_URL;
+}
 function playSound(id) {
   const el = document.getElementById(id);
-  if (!el) return;
-  try { el.currentTime = 0; el.play(); } catch {}
+  if (!el) {
+    console.warn(`[sound] element #${id} not found`);
+    return;
+  }
+  try {
+    el.currentTime = 0;
+    const p = el.play();
+    if (p && typeof p.catch === "function") {
+      p.catch(err => console.warn(`[sound] play() failed for #${id}:`, err));
+    }
+  } catch (err) {
+    console.warn(`[sound] exception for #${id}:`, err);
+  }
 }
 
 // ---- Phase grouping for tile stamp classes ----
@@ -278,12 +299,44 @@ function certOutsideHandler(e){
       if (b) b.style.display = "block";
     }
 
+    // Ensure audio tags point to the absolute URLs
+    ensureAudioSrcs();
+
     const data = await loadContent();
     window.__kcDays = data.days;
 
     const progress = loadProgress();
     renderCalendar(window.__kcDays, progress);
     renderBeltTracker(progress);
+
+    // One-time sound unlock for mobile Safari/iOS
+    (function setupSoundUnlock() {
+      let unlocked = false;
+      function unlock() {
+        if (unlocked) return;
+        unlocked = true;
+        ['sound-open','sound-complete'].forEach(id => {
+          const a = document.getElementById(id);
+          if (!a) return;
+          try {
+            const p = a.play();
+            if (p && typeof p.then === "function") {
+              p.then(() => { try { a.pause(); a.currentTime = 0; } catch(_){}; })
+               .catch(err => console.warn(`[sound] unlock failed for #${id}:`, err));
+            }
+          } catch(err) {
+            console.warn(`[sound] unlock exception for #${id}:`, err);
+          }
+        });
+        window.removeEventListener('pointerdown', unlock);
+        window.removeEventListener('keydown', unlock);
+        window.removeEventListener('touchstart', unlock);
+      }
+      window.addEventListener('pointerdown', unlock, { once:true });
+      window.addEventListener('keydown', unlock, { once:true });
+      window.addEventListener('touchstart', unlock, { once:true });
+    })();
+
   } catch (e) {
     console.error(e);
     const calendar = document.getElementById("calendar");
