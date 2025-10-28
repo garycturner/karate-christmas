@@ -4,12 +4,12 @@
   <meta charset="UTF-8" />
   <title>12 Days of Karate Christmas</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <!-- Elegant, traditional feel -->
+  <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;600;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=10" />
+  <link rel="stylesheet" href="style.css?v=20" />
 </head>
 <body>
-  <!-- snow canvas sits behind everything -->
+  <!-- Snow layer -->
   <canvas id="snow" class="snow-canvas" aria-hidden="true"></canvas>
 
   <div class="page-wrap">
@@ -23,8 +23,8 @@
       </div>
     </header>
 
-    <!-- Preview banner (only shown when PREVIEW_MODE=true in script.js) -->
-    <div id="preview-banner" role="status" class="preview-banner" style="display:none;">
+    <!-- Preview banner (shown only when PREVIEW_MODE=true) -->
+    <div id="preview-banner" class="preview-banner" role="status" style="display:none;">
       🔧 Preview Mode is ON – all days are unlocked for testing. (Turn off before launch.)
     </div>
 
@@ -33,6 +33,9 @@
         <h2 class="section-heading">Advent Dojo Calendar</h2>
         <div id="calendar" class="calendar" aria-live="polite"></div>
       </section>
+
+      <!-- Belt Scroll Tracker (below tiles) -->
+      <section id="belt-tracker" class="belt-tracker" aria-label="Belt Progress Tracker"></section>
     </main>
 
     <footer class="site-footer">
@@ -74,10 +77,10 @@
     </div>
   </div>
 
-  <!-- Sounds (optional – keep for later, won’t block if missing) -->
+  <!-- Sounds (optional; safe if missing) -->
   <audio id="sound-chime" src="assets/sounds/chime.mp3" preload="auto"></audio>
   <audio id="sound-complete" src="assets/sounds/taiko.mp3" preload="auto"></audio>
 
-  <script src="script.js?v=10"></script>
+  <script src="script.js?v=20"></script>
 </body>
 </html>
