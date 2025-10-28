@@ -45,10 +45,7 @@ async function loadContent() {
 function playSound(id) {
   const el = document.getElementById(id);
   if (!el) return;
-  try {
-    el.currentTime = 0;
-    el.play();
-  } catch {}
+  try { el.currentTime = 0; el.play(); } catch {}
 }
 
 // ---- Phase grouping for tile stamp classes ----
@@ -84,21 +81,15 @@ function renderCalendar(days, progress) {
       <div class="day-date">Dec ${START_DAY + i} • ${d.title}</div>
     `;
 
-    tile.onclick = () => {
-      if (!unlocked) return;
-      openModal(d, i, progress);
-    };
-
+    tile.onclick = () => { if (unlocked) openModal(d, i, progress); };
     calendar.appendChild(tile);
   });
 }
 
 // ---- Modal logic ----
 function openModal(day, index, progress) {
-  document.getElementById("modal-title").textContent =
-    `Day ${day.day} – ${day.title || ""}`;
-  document.getElementById("modal-belt").textContent =
-    `${day.phaseIcon || ""} ${day.phase || ""}`;
+  document.getElementById("modal-title").textContent = `Day ${day.day} – ${day.title || ""}`;
+  document.getElementById("modal-belt").textContent = `${day.phaseIcon || ""} ${day.phase || ""}`;
   document.getElementById("modal-physical").innerHTML = day.physical || "<p>—</p>";
   document.getElementById("modal-knowledge").innerHTML = day.knowledge || "<p>—</p>";
   document.getElementById("modal-festive").innerHTML = day.festive || "<p>—</p>";
@@ -109,9 +100,22 @@ function openModal(day, index, progress) {
   completeBtn.onclick = () => {
     const updated = [...progress];
     updated[index] = true;
+
+    // Detect if a phase just flipped to "earned" (for animation)
+    let revealKey = null;
+    PHASES.forEach(p => {
+      const [a,b] = p.range;
+      const beforeDone = progress.slice(a,b+1).filter(Boolean).length;
+      const afterDone  = updated.slice(a,b+1).filter(Boolean).length;
+      if (beforeDone < (b-a+1) && afterDone === (b-a+1)) {
+        revealKey = p.key;
+      }
+    });
+
     saveProgress(updated);
     closeModal();
     renderCalendar(window.__kcDays, updated);
+    renderBeltTracker(updated, revealKey);
     playSound("sound-complete");
   };
 
@@ -124,18 +128,72 @@ function closeModal() {
   if (modal) modal.hidden = true;
 }
 
-// Close modal: overlay, X, or Esc
+// Close modal on overlay or X
 document.addEventListener("click", (e) => {
   const modal = document.getElementById("modal");
   if (!modal || modal.hidden) return;
+  if (e.target.id === "modal" || e.target.id === "modal-close") closeModal();
+});
+// ESC closes modal
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
 
-  if (e.target.id === "modal" || e.target.id === "modal-close") {
-    closeModal();
-  }
-});
-document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape") closeModal();
-});
+// ===================
+// BELT SCROLL TRACKER
+// ===================
+// Map days -> phases (3 days each)
+const PHASES = [
+  { key: "white", label: "White Belt Snow",       icon: "❄️", range: [0,2] },
+  { key: "green", label: "Green Belt Fir Tree",   icon: "🌿", range: [3,5] },
+  { key: "brown", label: "Brown Belt Reindeer",   icon: "🦌", range: [6,8] },
+  { key: "black", label: "Black Belt Blizzard",   icon: "🌟", range: [9,11] }
+];
+
+function renderBeltTracker(progress, revealKey) {
+  const wrap = document.getElementById("belt-tracker");
+  if (!wrap) return;
+
+  let html = "";
+  PHASES.forEach(phase => {
+    const [a,b] = phase.range;
+    const total = b - a + 1; // 3
+    const done  = progress.slice(a, b+1).filter(Boolean).length;
+
+    let state = "locked";
+    if (done === 0) state = "locked";
+    else if (done < total) state = "partial";
+    else state = "earned";
+
+    const percent = Math.round((done/total)*100);
+    const revealedClass = (revealKey === phase.key && state === "earned") ? "revealed" : "";
+
+    html += `
+      <div class="scroll ${phase.key} ${state} ${revealedClass}">
+        <div class="ribbon" aria-hidden="true"></div>
+        <div class="scroll-paper">
+          <div class="scroll-header">
+            <span class="icon">${phase.icon}</span>
+            <span class="title">${phase.label}</span>
+            <span class="stamp">達成</span>
+          </div>
+          <p class="scroll-sub">Days ${a+1}–${b+1}</p>
+          <div class="scroll-meta">
+            <div class="progress-bar" aria-label="${phase.label} progress">
+              <span style="width:${percent}%"></span>
+            </div>
+            <div class="badge-state">
+              ${done}/${total} ${
+                state === "earned" ? "• Belt Earned" :
+                state === "partial" ? "• In Progress" : "• Locked"
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  });
+
+  wrap.innerHTML = html;
+}
 
 // ---- Init ----
 (async function init() {
@@ -151,6 +209,7 @@ document.addEventListener("keydown", (e) => {
 
     const progress = loadProgress();
     renderCalendar(window.__kcDays, progress);
+    renderBeltTracker(progress);
   } catch (e) {
     console.error(e);
     const calendar = document.getElementById("calendar");
@@ -181,7 +240,6 @@ document.addEventListener("keydown", (e) => {
       drift: Math.random() * 0.6 - 0.3 // innate sideways drift
     };
   }
-
   for (let i = 0; i < FLAKES; i++) flakes.push(makeFlake());
 
   function step() {
