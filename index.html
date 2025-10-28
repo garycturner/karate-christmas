@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;600;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=30" />
+  <link rel="stylesheet" href="style.css?v=40" />
 </head>
 <body>
   <!-- Snow layer -->
@@ -31,11 +31,18 @@
     <main class="content">
       <section class="calendar-wrap">
         <h2 class="section-heading">Advent Dojo Calendar</h2>
-        <div id="calendar" class="calendar" aria-live="polite"></div>
+      <div id="calendar" class="calendar" aria-live="polite"></div>
       </section>
 
       <!-- Belt Scroll Tracker (below tiles) -->
       <section id="belt-tracker" class="belt-tracker" aria-label="Belt Progress Tracker"></section>
+
+      <!-- Persistent certificate CTA (shown only when Black Belt is earned) -->
+      <div id="cert-download" class="cert-download" hidden>
+        <h3 class="cert-heading">🎖 Black Belt Earned</h3>
+        <p class="cert-note">Congratulations! You’ve completed the 12 Days of Karate Christmas.</p>
+        <a id="download-cert-btn-persist" class="primary" href="#" download>Download Certificate (PDF)</a>
+      </div>
     </main>
 
     <footer class="site-footer">
@@ -82,16 +89,9 @@
     <div class="modal-card" id="certificate-card">
       <button class="close" id="certificate-close" aria-label="Close">×</button>
       <h2>🎖 Black Belt Achieved!</h2>
-      <p class="cert-sub">You completed the 12 Days of Karate Christmas.<br><strong>Karate Christmas Black Belt of Spirit &amp; Strength</strong> is awarded.</p>
-
-      <div class="cert-form">
-        <label for="cert-name-input">Your name for the certificate</label>
-        <input id="cert-name-input" type="text" placeholder="Type your name…" maxlength="50" />
-        <small class="hint">This name will be saved on your device for future downloads.</small>
-      </div>
-
+      <p class="cert-sub">You’ve completed the 12 Days of Karate Christmas.<br>Download your official certificate:</p>
       <div class="actions">
-        <button id="generate-cert-btn" class="primary" type="button">Generate Certificate</button>
+        <a id="download-cert-btn" class="primary" href="#" download>Download Certificate (PDF)</a>
       </div>
     </div>
   </div>
@@ -100,6 +100,6 @@
   <audio id="sound-chime" src="assets/sounds/chime.mp3" preload="auto"></audio>
   <audio id="sound-complete" src="assets/sounds/taiko.mp3" preload="auto"></audio>
 
-  <script src="script.js?v=30"></script>
+  <script src="script.js?v=40"></script>
 </body>
 </html>
