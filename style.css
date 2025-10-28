@@ -128,7 +128,7 @@ body{
 .santa blockquote{ margin:8px 0 0; padding-left:12px; border-left:3px solid var(--accent); color:#bdf0d5 }
 .close{ position:absolute; right:10px; top:6px; background:transparent; border:none; font-size:28px; color:#fff; cursor:pointer }
 .actions{ display:flex; justify-content:flex-end; gap:8px; margin-top:12px }
-.primary{ background:#19c37d; color:#062e1f; border:2px solid #0a6e47; padding:10px 14px; border-radius:10px; font-weight:700; cursor:pointer }
+.primary{ background:#19c37d; color:#062e1f; border:2px solid #0a6e47; padding:10px 14px; border-radius:10px; font-weight:700; cursor:pointer; text-decoration:none; display:inline-block }
 .primary:hover{ transform: translateY(-1px) }
 
 /* Footer */
@@ -139,7 +139,7 @@ body{
    BELT SCROLL TRACKER
    ======================= */
 .belt-tracker{
-  width:100%; max-width:1100px; padding:0 16px 60px; margin:0 auto;
+  width:100%; max-width:1100px; padding:0 16px 24px; margin:0 auto;
   display:grid; gap:16px;
 }
 
@@ -203,17 +203,14 @@ body{
 }
 .scroll.earned .stamp{ display:inline-block; }
 
-/* Certificate modal tweaks */
-.cert-sub{ color:#cfd3d7; margin:6px 0 14px; }
-.cert-form{ display:flex; flex-direction:column; gap:8px; margin:4px 0 6px; }
-.cert-form label{ font-weight:700; color:#fff; }
-.cert-form input{
-  background:#0f1419; color:#eaeaea; border:1px solid #2e333a; border-radius:8px;
-  padding:10px 12px; outline:none;
+/* Persistent certificate CTA */
+.cert-download{
+  width:100%; max-width:1100px; padding:12px 16px 42px; margin:0 auto; text-align:center;
 }
-.cert-form input:focus{ border-color:#19c37d; box-shadow:0 0 0 2px rgba(25,195,125,.25) }
-.cert-form .hint{ color:#9aa0a6; }
+.cert-heading{ margin:10px 0 6px; font-family:"Noto Serif JP", serif; }
+.cert-note{ margin:0 0 12px; color:#cfd3d7; }
 
+/* Accessibility */
 @media (prefers-reduced-motion: reduce){
   .day-tile, .primary, .scroll.revealed{ transition:none; animation:none; }
   .snow-canvas{ display:none !important; }
