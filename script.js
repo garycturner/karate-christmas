@@ -8,8 +8,19 @@ const TOTAL_DAYS = 12;
 const PREVIEW_MODE = true;       // <-- set to false before launch
 const STORAGE_KEY = "kc12-progress";     // completion per day
 const CERT_SHOWN_KEY = "kc12-cert-shown";// show certificate modal once when earned
-// Path to your PDF in the repo:
-const CERT_PATH = "certificates/christmas_cert.pdf";
+
+// Build a base path that works on GitHub Project Pages (e.g., /12DaysofKarateChristmas/)
+// If there's a <base> tag, use it; otherwise compute from current path.
+const BASE_PATH = (document.querySelector('base')?.href)
+  ? new URL(document.querySelector('base').href).pathname
+  : (function () {
+      // Strip filename from the current path (keeps trailing slash)
+      const p = window.location.pathname;
+      return p.endsWith('/') ? p : p.replace(/[^/]*$/, '');
+    })();
+
+// Absolute URL to your PDF (adjust filename if needed)
+const CERT_PATH = new URL('certificates/christmas_cert.pdf', window.location.origin + BASE_PATH).toString();
 // ----------------------------
 
 // ---- Date helpers (Europe/London) ----
@@ -205,9 +216,13 @@ function renderBeltTracker(progress, revealKey) {
     if (blackDone) {
       persist.hidden = false;
       persistBtn.href = CERT_PATH;
+      persistBtn.setAttribute("target", "_blank");
+      persistBtn.setAttribute("rel", "noopener");
     } else {
       persist.hidden = true;
       persistBtn.removeAttribute("href");
+      persistBtn.removeAttribute("target");
+      persistBtn.removeAttribute("rel");
     }
   }
 
@@ -225,7 +240,11 @@ function renderBeltTracker(progress, revealKey) {
 function openCertificateModal() {
   const modal = document.getElementById("certificate-modal");
   const dl = document.getElementById("download-cert-btn");
-  if (dl) dl.href = CERT_PATH;
+  if (dl) {
+    dl.href = CERT_PATH;
+    dl.setAttribute("target", "_blank");
+    dl.setAttribute("rel", "noopener");
+  }
   if (modal) modal.hidden = false;
 
   // Close handlers
