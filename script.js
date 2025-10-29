@@ -34,10 +34,13 @@ const BELTS = [
 ];
 
 // Required completion indices to be *eligible* for each belt level
+// ✔ Green: days 1–3 (indices 0,1,2)
+// ✔ Brown: days 4–6 (indices 3,4,5)
+// ✔ Black: all 12 (0..11)
 const BELT_REQUIREMENTS = {
-  1: [...Array(4).keys()],         // 0..3 complete to be eligible for Green
-  2: [...Array(7).keys()],         // 0..6 complete to be eligible for Brown
-  3: [...Array(12).keys()],        // 0..11 complete to be eligible for Black
+  1: [0,1,2],                           // Green
+  2: [3,4,5],                           // Brown
+  3: [...Array(12).keys()],             // Black
 };
 
 // ---- Date helpers (Europe/London) ----
@@ -193,7 +196,7 @@ document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal
 // NEW: PIXEL BELT + UPGRADE LOGIC
 // ===================
 function eligibleLevel(progress) {
-  // Returns highest level the user is ELIGIBLE for based on completion
+  // Returns highest level the user is ELIGIBLE for based on completion against BELT_REQUIREMENTS
   for (let level = 3; level >= 1; level--) {
     const req = BELT_REQUIREMENTS[level];
     if (req.every(i => !!progress[i])) return level;
@@ -209,8 +212,8 @@ function renderBeltSection(progress) {
   const hint = document.getElementById("belt-upgrade-hint");
   if (!img || !nameEl || !panel || !statusEl) return;
 
-  const current = loadBeltLevel();         // saved level
-  const eligible = eligibleLevel(progress); // based on completed days
+  const current = loadBeltLevel();          // saved level (0..3)
+  const eligible = eligibleLevel(progress); // computed from completion
   const upgradeAvailable = eligible > current;
 
   // update img + name with a quick fade
@@ -300,10 +303,25 @@ function renderBadges(progress){
     const tile = document.createElement("div");
     const unlocked = !!progress[i];
     tile.className = "badge-tile" + (unlocked ? " unlocked" : "");
+
     const img = document.createElement("img");
     img.src = `assets/badges/badge_day${i+1}.png`;
     img.alt = unlocked ? `Badge Day ${i+1} (unlocked)` : `Badge Day ${i+1} (locked)`;
+
+    // If an image fails to load, keep a minimal placeholder so the grid is visible
+    img.addEventListener("error", () => {
+      img.remove(); // hide broken image
+      const ph = document.createElement("div");
+      ph.style.width = "44px";
+      ph.style.height = "44px";
+      ph.style.borderRadius = "8px";
+      ph.style.opacity = unlocked ? "1" : ".35";
+      ph.style.background = unlocked ? "linear-gradient(135deg,#27c08a,#8defc9)" : "#2a2f35";
+      tile.appendChild(ph);
+    }, { once:true });
+
     if (unlocked) img.classList.add("badge-pop");
+
     tile.appendChild(img);
     grid.appendChild(tile);
   }
