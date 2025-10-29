@@ -8,8 +8,9 @@ const TOTAL_DAYS = 12;
 const PREVIEW_MODE = true;           // <-- set to false before launch
 const STORAGE_KEY = "kc12-progress"; // completion per day
 const CERT_SHOWN_KEY = "kc12-cert-shown"; // show certificate modal once when earned
+const BELT_KEY = "kc12-belt-level";  // 0=white,1=green,2=brown,3=black
 
-// Absolute URLs for sounds (served from your karate-christmas repo)
+// Sounds (absolute URLs hosted on karate-christmas repo)
 const SOUND_OPEN_URL = "https://garycturner.github.io/karate-christmas/assets/sounds/open.mp3";
 const SOUND_COMPLETE_URL = "https://garycturner.github.io/karate-christmas/assets/sounds/complete.mp3";
 
@@ -23,7 +24,21 @@ const BASE_PATH = (document.querySelector('base')?.href)
 
 // Absolute URL to your certificate PDF (adjust filename if needed)
 const CERT_PATH = new URL('certificates/christmas_cert.pdf', window.location.origin + BASE_PATH).toString();
-// ----------------------------
+
+// Belt image map
+const BELTS = [
+  { name: "White Belt", img: "assets/belts/belt_white.png" },
+  { name: "Green Belt", img: "assets/belts/belt_green.png" },
+  { name: "Brown Belt", img: "assets/belts/belt_brown.png" },
+  { name: "Black Belt", img: "assets/belts/belt_black.png" },
+];
+
+// Required completion indices to be *eligible* for each belt level
+const BELT_REQUIREMENTS = {
+  1: [...Array(4).keys()],         // 0..3 complete to be eligible for Green
+  2: [...Array(7).keys()],         // 0..6 complete to be eligible for Brown
+  3: [...Array(12).keys()],        // 0..11 complete to be eligible for Black
+};
 
 // ---- Date helpers (Europe/London) ----
 function todayInLondon() {
@@ -46,6 +61,15 @@ function loadProgress() {
   return new Array(TOTAL_DAYS).fill(false);
 }
 function saveProgress(arr) { localStorage.setItem(STORAGE_KEY, JSON.stringify(arr)); }
+function countDone(arr){ return arr.filter(Boolean).length; }
+
+// Belt level persistence
+function loadBeltLevel(){
+  const raw = localStorage.getItem(BELT_KEY);
+  const n = Number(raw);
+  return Number.isInteger(n) && n >= 0 && n <= 3 ? n : 0; // default white
+}
+function saveBeltLevel(level){ localStorage.setItem(BELT_KEY, String(level)); }
 
 // ---- Content loader ----
 async function loadContent() {
@@ -54,10 +78,7 @@ async function loadContent() {
   return res.json();
 }
 
-// ---- Sounds (safe, with console logging) ----
-// Make sure index.html has:
-// <audio id="sound-open" preload="auto"></audio>
-// <audio id="sound-complete" preload="auto"></audio>
+// ---- Sounds ----
 function ensureAudioSrcs() {
   const ao = document.getElementById("sound-open");
   const ac = document.getElementById("sound-complete");
@@ -66,16 +87,11 @@ function ensureAudioSrcs() {
 }
 function playSound(id) {
   const el = document.getElementById(id);
-  if (!el) {
-    console.warn(`[sound] element #${id} not found`);
-    return;
-  }
+  if (!el) { console.warn(`[sound] element #${id} not found`); return; }
   try {
     el.currentTime = 0;
     const p = el.play();
-    if (p && typeof p.catch === "function") {
-      p.catch(err => console.warn(`[sound] play() failed for #${id}:`, err));
-    }
+    if (p?.catch) p.catch(err => console.warn(`[sound] play() failed for #${id}:`, err));
   } catch (err) {
     console.warn(`[sound] exception for #${id}:`, err);
   }
@@ -119,7 +135,7 @@ function renderCalendar(days, progress) {
   });
 }
 
-// ---- Modal logic ----
+// ---- Modal logic (day content) ----
 function openModal(day, index, progress) {
   document.getElementById("modal-title").textContent = `Day ${day.day} – ${day.title || ""}`;
   document.getElementById("modal-belt").textContent = `${day.phaseIcon || ""} ${day.phase || ""}`;
@@ -134,23 +150,24 @@ function openModal(day, index, progress) {
     const updated = [...progress];
     updated[index] = true;
 
-    // Detect if a phase just flipped to "earned" (for animation and certificate)
-    let revealKey = null;
-    PHASES.forEach(p => {
-      const [a,b] = p.range;
-      const beforeDone = progress.slice(a,b+1).filter(Boolean).length;
-      const afterDone  = updated.slice(a,b+1).filter(Boolean).length;
-      if (beforeDone < (b-a+1) && afterDone === (b-a+1)) revealKey = p.key;
-    });
-
     saveProgress(updated);
     closeModal();
     renderCalendar(window.__kcDays, updated);
-    renderBeltTracker(updated, revealKey);
+    renderBeltSection(updated);
+    renderBadges(updated);
     playSound("sound-complete");
 
-    // If Black Belt became earned now, show certificate modal
-    if (revealKey === "black") {
+    // If all days are completed, auto-show certificate modal & show persistent CTA
+    const allDone = updated.every(Boolean);
+    const persist = document.getElementById("cert-download");
+    const persistBtn = document.getElementById("download-cert-btn-persist");
+    if (persist && persistBtn) {
+      if (allDone) {
+        persist.hidden = false;
+        persistBtn.href = CERT_PATH;
+      }
+    }
+    if (allDone && localStorage.getItem(CERT_SHOWN_KEY) !== "1") {
       openCertificateModal();
       localStorage.setItem(CERT_SHOWN_KEY, "1");
     }
@@ -170,89 +187,125 @@ document.addEventListener("click", (e) => {
   const modal = document.getElementById("modal");
   if (modal && !modal.hidden && (e.target.id === "modal" || e.target.id === "modal-close")) closeModal();
 });
-// ESC closes day modal
 document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
 
 // ===================
-// BELT SCROLL TRACKER
+// NEW: PIXEL BELT + UPGRADE LOGIC
 // ===================
-const PHASES = [
-  { key: "white", label: "White Belt Snow",       icon: "❄️", range: [0,2] },
-  { key: "green", label: "Green Belt Fir Tree",   icon: "🌿", range: [3,5] },
-  { key: "brown", label: "Brown Belt Reindeer",   icon: "🦌", range: [6,8] },
-  { key: "black", label: "Black Belt Blizzard",   icon: "🌟", range: [9,11] }
-];
+function eligibleLevel(progress) {
+  // Returns highest level the user is ELIGIBLE for based on completion
+  for (let level = 3; level >= 1; level--) {
+    const req = BELT_REQUIREMENTS[level];
+    if (req.every(i => !!progress[i])) return level;
+  }
+  return 0; // default white
+}
 
-function renderBeltTracker(progress, revealKey) {
-  const wrap = document.getElementById("belt-tracker");
-  if (!wrap) return;
+function renderBeltSection(progress) {
+  const img = document.getElementById("current-belt-img");
+  const nameEl = document.getElementById("belt-name");
+  const statusEl = document.getElementById("belt-status");
+  const panel = document.querySelector(".belt-visual");
+  const hint = document.getElementById("belt-upgrade-hint");
+  if (!img || !nameEl || !panel || !statusEl) return;
 
-  let html = "";
-  PHASES.forEach(phase => {
-    const [a,b] = phase.range;
-    const total = b - a + 1; // 3
-    const done  = progress.slice(a, b+1).filter(Boolean).length;
+  const current = loadBeltLevel();         // saved level
+  const eligible = eligibleLevel(progress); // based on completed days
+  const upgradeAvailable = eligible > current;
 
-    let state = "locked";
-    if (done === 0) state = "locked";
-    else if (done < total) state = "partial";
-    else state = "earned";
+  // update img + name with a quick fade
+  img.classList.remove("belt-fade-in");
+  img.classList.add("belt-fade-out");
+  setTimeout(() => {
+    img.src = BELTS[current].img;
+    nameEl.textContent = BELTS[current].name;
+    img.classList.remove("belt-fade-out");
+    img.classList.add("belt-fade-in");
+  }, 150);
 
-    const percent = Math.round((done/total)*100);
-    const revealedClass = (revealKey === phase.key && state === "earned") ? "revealed" : "";
-
-    html += `
-      <div class="scroll ${phase.key} ${state} ${revealedClass}">
-        <div class="ribbon" aria-hidden="true"></div>
-        <div class="scroll-paper">
-          <div class="scroll-header">
-            <span class="icon">${phase.icon}</span>
-            <span class="title">${phase.label}</span>
-            <span class="stamp">達成</span>
-          </div>
-          <p class="scroll-sub">Days ${a+1}–${b+1}</p>
-          <div class="scroll-meta">
-            <div class="progress-bar" aria-label="${phase.label} progress">
-              <span style="width:${percent}%"></span>
-            </div>
-            <div class="badge-state">
-              ${done}/${total} ${
-                state === "earned" ? "• Belt Earned" :
-                state === "partial" ? "• In Progress" : "• Locked"
-              }
-            </div>
-          </div>
-        </div>
-      </div>
-    `;
-  });
-
-  wrap.innerHTML = html;
-
-  // Persistent download button (only when Black is earned)
-  const [a,b] = PHASES[3].range; // black range [9,11]
-  const blackDone = progress.slice(a,b+1).filter(Boolean).length === (b-a+1);
-  const persist = document.getElementById("cert-download");
-  const persistBtn = document.getElementById("download-cert-btn-persist");
-  if (persist && persistBtn) {
-    if (blackDone) {
-      persist.hidden = false;
-      persistBtn.href = CERT_PATH;
-      persistBtn.setAttribute("target", "_blank");
-      persistBtn.setAttribute("rel", "noopener");
+  // Status & upgrade affordance
+  if (upgradeAvailable) {
+    panel.classList.add("upgrade-available");
+    hint.hidden = false;
+    statusEl.textContent = "Upgrade available — click the belt to level up!";
+    panel.onclick = () => openUpgradeModal(current, eligible);
+  } else {
+    panel.classList.remove("upgrade-available");
+    hint.hidden = true;
+    panel.onclick = null;
+    const done = countDone(progress);
+    if (current < 3) {
+      statusEl.textContent = `Complete more days to unlock your next belt (completed: ${done}/12).`;
     } else {
-      persist.hidden = true;
-      persistBtn.removeAttribute("href");
-      persistBtn.removeAttribute("target");
-      persistBtn.removeAttribute("rel");
+      statusEl.textContent = "You are a Black Belt — wear it with quiet strength.";
     }
   }
 
-  // Auto-open certificate modal once if Black is earned and not shown yet
-  const shown = localStorage.getItem(CERT_SHOWN_KEY) === "1";
-  if (blackDone && !shown) {
-    openCertificateModal();
-    localStorage.setItem(CERT_SHOWN_KEY, "1");
+  // Show persistent certificate CTA if all done
+  const persist = document.getElementById("cert-download");
+  const persistBtn = document.getElementById("download-cert-btn-persist");
+  if (persist && persistBtn) {
+    if (progress.every(Boolean)) {
+      persist.hidden = false;
+      persistBtn.href = CERT_PATH;
+    } else {
+      persist.hidden = true;
+      persistBtn.removeAttribute("href");
+    }
+  }
+}
+
+// Upgrade modal + apply
+function openUpgradeModal(current, eligible) {
+  const modal = document.getElementById("upgrade-modal");
+  const closeBtn = document.getElementById("upgrade-close");
+  const msg = document.getElementById("upgrade-message");
+  const img = document.getElementById("upgrade-belt-img");
+  const btn = document.getElementById("confirm-upgrade-btn");
+
+  const newBelt = BELTS[eligible];
+  msg.textContent = `“Your training shines like snow under moonlight. You are ready to wear the ${newBelt.name}.”`;
+  img.src = newBelt.img;
+
+  modal.hidden = false;
+
+  closeBtn.onclick = () => closeUpgradeModal();
+  btn.onclick = () => {
+    saveBeltLevel(eligible);
+    closeUpgradeModal();
+    playSound("sound-complete");
+    const progress = loadProgress();
+    renderBeltSection(progress);
+  };
+
+  // ESC / outside click
+  function esc(e){ if (e.key === "Escape") closeUpgradeModal(); }
+  function outside(e){ if (e.target.id === "upgrade-modal") closeUpgradeModal(); }
+  document.addEventListener("keydown", esc, { once:true });
+  document.addEventListener("click", outside, { once:true });
+
+  function closeUpgradeModal(){
+    modal.hidden = true;
+  }
+}
+
+// ===================
+// BADGE GRID
+// ===================
+function renderBadges(progress){
+  const grid = document.getElementById("badge-grid");
+  if (!grid) return;
+  grid.innerHTML = "";
+  for (let i = 0; i < 12; i++){
+    const tile = document.createElement("div");
+    const unlocked = !!progress[i];
+    tile.className = "badge-tile" + (unlocked ? " unlocked" : "");
+    const img = document.createElement("img");
+    img.src = `assets/badges/badge_day${i+1}.png`;
+    img.alt = unlocked ? `Badge Day ${i+1} (unlocked)` : `Badge Day ${i+1} (locked)`;
+    if (unlocked) img.classList.add("badge-pop");
+    tile.appendChild(img);
+    grid.appendChild(tile);
   }
 }
 
@@ -269,14 +322,10 @@ function openCertificateModal() {
   }
   if (modal) modal.hidden = false;
 
-  // Close handlers
   const closeBtn = document.getElementById("certificate-close");
   if (closeBtn) closeBtn.onclick = () => { closeCertificateModal(); };
 
-  // Close on Esc
   document.addEventListener("keydown", certEscHandler);
-
-  // Outside click to close
   document.addEventListener("click", certOutsideHandler);
 }
 function closeCertificateModal() {
@@ -307,7 +356,8 @@ function certOutsideHandler(e){
 
     const progress = loadProgress();
     renderCalendar(window.__kcDays, progress);
-    renderBeltTracker(progress);
+    renderBeltSection(progress);
+    renderBadges(progress);
 
     // One-time sound unlock for mobile Safari/iOS
     (function setupSoundUnlock() {
@@ -320,13 +370,11 @@ function certOutsideHandler(e){
           if (!a) return;
           try {
             const p = a.play();
-            if (p && typeof p.then === "function") {
+            if (p?.then) {
               p.then(() => { try { a.pause(); a.currentTime = 0; } catch(_){}; })
-               .catch(err => console.warn(`[sound] unlock failed for #${id}:`, err));
+              .catch(err => console.warn(`[sound] unlock failed for #${id}:`, err));
             }
-          } catch(err) {
-            console.warn(`[sound] unlock exception for #${id}:`, err);
-          }
+          } catch(err) { console.warn(`[sound] unlock exception for #${id}:`, err); }
         });
         window.removeEventListener('pointerdown', unlock);
         window.removeEventListener('keydown', unlock);
@@ -336,6 +384,14 @@ function certOutsideHandler(e){
       window.addEventListener('keydown', unlock, { once:true });
       window.addEventListener('touchstart', unlock, { once:true });
     })();
+
+    // Show persistent certificate CTA if all done (on load)
+    const persist = document.getElementById("cert-download");
+    const persistBtn = document.getElementById("download-cert-btn-persist");
+    if (persist && persistBtn && progress.every(Boolean)) {
+      persist.hidden = false;
+      persistBtn.href = CERT_PATH;
+    }
 
   } catch (e) {
     console.error(e);
