@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;600;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=40" />
+  <link rel="stylesheet" href="style.css?v=50" />
 </head>
 <body>
   <!-- Snow layer -->
@@ -31,17 +31,32 @@
     <main class="content">
       <section class="calendar-wrap">
         <h2 class="section-heading">Advent Dojo Calendar</h2>
-      <div id="calendar" class="calendar" aria-live="polite"></div>
+        <div id="calendar" class="calendar" aria-live="polite"></div>
       </section>
 
-      <!-- Belt Scroll Tracker (below tiles) -->
-      <section id="belt-tracker" class="belt-tracker" aria-label="Belt Progress Tracker"></section>
+      <!-- Current Belt (pixel) -->
+      <section id="current-belt" class="belt-panel" aria-label="Current Belt Rank">
+        <div class="belt-visual">
+          <img id="current-belt-img" alt="Current belt" src="assets/belts/belt_white.png" />
+          <div id="belt-upgrade-hint" class="belt-hint" hidden>Click to level up</div>
+        </div>
+        <div class="belt-caption">
+          <strong id="belt-name">White Belt</strong>
+          <span id="belt-status" class="belt-status">Keep training to unlock your next belt.</span>
+        </div>
+      </section>
 
-      <!-- Persistent certificate CTA (shown only when Black Belt is earned) -->
+      <!-- Badge Gallery -->
+      <section id="badge-gallery" class="badge-gallery" aria-label="Badge Gallery (Days 1–12)">
+        <h3 class="section-heading">Badges</h3>
+        <div id="badge-grid" class="badge-grid" aria-live="polite"></div>
+      </section>
+
+      <!-- Persistent certificate CTA (shown only when Black Belt earned OR all days complete) -->
       <div id="cert-download" class="cert-download" hidden>
         <h3 class="cert-heading">🎖 Black Belt Earned</h3>
         <p class="cert-note">Congratulations! You’ve completed the 12 Days of Karate Christmas.</p>
-        <a id="download-cert-btn-persist" class="primary" href="#" download>Download Certificate (PDF)</a>
+        <a id="download-cert-btn-persist" class="primary" href="#" target="_blank" rel="noopener">Download Certificate (PDF)</a>
       </div>
     </main>
 
@@ -84,6 +99,21 @@
     </div>
   </div>
 
+  <!-- Belt Upgrade Modal -->
+  <div id="upgrade-modal" class="modal" role="dialog" aria-modal="true" hidden>
+    <div class="modal-card">
+      <button class="close" id="upgrade-close" aria-label="Close">×</button>
+      <h2 id="upgrade-title">🎅 Sensei Santa</h2>
+      <p id="upgrade-message" class="upgrade-message"></p>
+      <div class="upgrade-belt-preview">
+        <img id="upgrade-belt-img" alt="New belt preview" />
+      </div>
+      <div class="actions">
+        <button id="confirm-upgrade-btn" class="primary" type="button">Upgrade Belt</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Certificate Reveal Modal -->
   <div id="certificate-modal" class="modal" role="dialog" aria-modal="true" hidden>
     <div class="modal-card" id="certificate-card">
@@ -91,15 +121,15 @@
       <h2>🎖 Black Belt Achieved!</h2>
       <p class="cert-sub">You’ve completed the 12 Days of Karate Christmas.<br>Download your official certificate:</p>
       <div class="actions">
-        <a id="download-cert-btn" class="primary" href="#" download>Download Certificate (PDF)</a>
+        <a id="download-cert-btn" class="primary" href="#" target="_blank" rel="noopener">Download Certificate (PDF)</a>
       </div>
     </div>
   </div>
 
-  <!-- Sounds (optional; safe if missing) -->
-<audio id="sound-open" preload="auto"></audio>
-<audio id="sound-complete" preload="auto"></audio>
+  <!-- Sounds (no src here; JS sets absolute URLs) -->
+  <audio id="sound-open" preload="auto"></audio>
+  <audio id="sound-complete" preload="auto"></audio>
 
-  <script src="script.js?v=40"></script>
+  <script src="script.js?v=50"></script>
 </body>
 </html>
