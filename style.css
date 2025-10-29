@@ -103,16 +103,6 @@ body{
 }
 .badge.done{ background:rgba(26,148,86,.18); border-color:rgba(26,148,86,.5); color:#83e0b1 }
 
-/* Phase corner stamps */
-.day-tile::after{
-  content:""; position:absolute; left:12px; top:12px; font-size:22px; opacity:.95;
-  filter: drop-shadow(0 1px 0 rgba(0,0,0,.6));
-}
-.day-tile.phase-white::after{ content:"❄️"; }
-.day-tile.phase-green::after{ content:"🌿"; }
-.day-tile.phase-brown::after{ content:"🦌"; }
-.day-tile.phase-black::after{ content:"🌟"; }
-
 /* Modal (dark) */
 .modal{ position:fixed; inset:0; background:rgba(0,0,0,.55); display:grid; place-items:center; padding:12px; z-index:2 }
 .modal-card{
@@ -136,74 +126,70 @@ body{
 .seal{ font-size:20px; }
 
 /* =======================
-   BELT SCROLL TRACKER
+   BELT PANEL (PIXEL)
    ======================= */
-.belt-tracker{
-  width:100%; max-width:1100px; padding:0 16px 24px; margin:0 auto;
-  display:grid; gap:16px;
-}
-
-.scroll{
-  position:relative; display:grid; grid-template-columns: 1fr auto; align-items:center;
+.belt-panel{
+  width:100%; max-width:1100px; padding:8px 16px 16px; margin:0 auto 8px;
+  display:grid; grid-template-columns:auto 1fr; gap:16px; align-items:center;
   background:#111417; border:1px solid #2b2f35; border-radius:14px;
-  padding:14px 16px; box-shadow: 0 10px 28px rgba(0,0,0,.35); overflow:hidden;
+  box-shadow: 0 10px 28px rgba(0,0,0,.35);
+}
+.belt-visual{ position:relative; padding:12px }
+.belt-visual img{
+  image-rendering: pixelated;
+  height:64px; width:auto;
+  filter: drop-shadow(0 6px 20px rgba(0,0,0,.45));
+  transition: transform .2s ease, filter .2s ease, opacity .25s ease;
+}
+.belt-visual.upgrade-available img{
+  animation: beltGlow 1.4s ease-in-out infinite alternate;
+  cursor:pointer;
+}
+.belt-hint{
+  position:absolute; bottom:-6px; left:50%; transform:translateX(-50%);
+  font-size:.85rem; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.2);
+  padding:4px 8px; border-radius:999px; color:#dfe7e2; backdrop-filter: blur(4px);
+}
+@keyframes beltGlow{
+  0%{ filter: drop-shadow(0 6px 20px rgba(0,255,180,.0)); transform: translateY(0); }
+  100%{ filter: drop-shadow(0 6px 24px rgba(0,255,180,.45)); transform: translateY(-1px); }
 }
 
-/* Wooden rods (illusion) */
-.scroll::before, .scroll::after{
-  content:""; position:absolute; left:10px; right:10px; height:10px; border-radius:8px;
-  background: linear-gradient(90deg, #5b4636, #8c6a52 50%, #5b4636 100%);
-  box-shadow: 0 2px 0 rgba(0,0,0,.35) inset;
+.belt-caption{ display:flex; flex-direction:column; gap:4px }
+.belt-caption strong{ font-family:"Noto Serif JP", serif; font-size:1.05rem; }
+.belt-status{ color:#c7c7c3; }
+
+/* quick fade for belt swap */
+.belt-fade-out{ opacity:0; transition: opacity .18s ease; }
+.belt-fade-in { opacity:1; transition: opacity .22s ease; }
+
+/* =======================
+   BADGES
+   ======================= */
+.badge-gallery{ width:100%; max-width:1100px; padding:4px 16px 28px; margin:0 auto; }
+.badge-grid{
+  display:grid; grid-template-columns: repeat(6, minmax(0,1fr)); gap:14px;
 }
-.scroll::before{ top:8px; }
-.scroll::after{ bottom:8px; }
+@media (max-width: 780px){ .badge-grid{ grid-template-columns: repeat(4, minmax(0,1fr)); } }
+@media (max-width: 520px){ .badge-grid{ grid-template-columns: repeat(3, minmax(0,1fr)); } }
 
-.scroll-paper{
-  grid-column: 1 / -1;
-  background:
-    linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.04)),
-    repeating-linear-gradient(0deg, rgba(255,255,255,.03) 0 3px, rgba(255,255,255,.01) 3px 6px);
-  border-radius:10px; padding:26px 16px 22px; margin:6px 0;
-  border:1px solid #2a2e34; color:#eaeaea;
+.badge-tile{
+  background:#161a1f; border:1px solid #2b2f35; border-radius:12px; padding:10px;
+  display:grid; place-items:center; height:90px;
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,.04);
 }
-
-.scroll-header{ display:flex; align-items:center; gap:10px; margin-bottom:6px; font-family:"Noto Serif JP", serif; font-weight:700; }
-.scroll-header .icon{ font-size:22px }
-.scroll-header .title{ font-size:1.05rem }
-
-.scroll-sub{ color:#c7c7c3; font-size:.95rem; margin:0 0 8px }
-
-.scroll-meta{ display:flex; align-items:center; gap:12px; justify-content:space-between; flex-wrap:wrap; }
-.progress-bar{ flex:1 1 360px; height:10px; border-radius:999px; background:#1e242b; border:1px solid #313842; overflow:hidden; }
-.progress-bar > span{ display:block; height:100%; width:0%; background: linear-gradient(90deg, #e9d28f, #d1b06b); transition: width .35s ease; }
-.badge-state{ font-size:.85rem; padding:4px 10px; border-radius:999px; border:1px solid rgba(255,255,255,.2); background:rgba(255,255,255,.06); }
-
-/* Belt-coloured ribbons */
-.ribbon{ position:absolute; top:14px; right:14px; height:18px; min-width:80px; border-radius:6px; box-shadow: 0 1px 0 rgba(0,0,0,.5) inset; }
-.scroll.white  .ribbon{ background:#e9e9e9; border:1px solid #bbb; color:#111; }
-.scroll.green  .ribbon{ background:#1e6a3b; border:1px solid #154c2a; }
-.scroll.brown  .ribbon{ background:#6a442a; border:1px solid #4b2f1d; }
-.scroll.black  .ribbon{ background:#0a0a0a; border:1px solid #222; }
-
-/* States */
-.scroll.locked  { opacity:.55; filter:saturate(.7); }
-.scroll.partial { opacity:.9; }
-.scroll.earned  { opacity:1; box-shadow:0 16px 44px rgba(0,0,0,.55); }
-.scroll.earned .scroll-paper{ border-color:#3c443e; }
-
-/* Earned unfurl animation */
-@keyframes unfurl { 0%{ transform: scaleY(.92); opacity:0; } 60%{ transform: scaleY(1.03); opacity:1; } 100%{ transform: scaleY(1); } }
-.scroll.revealed { animation: unfurl 420ms ease both; }
-
-/* Achieved stamp */
-.stamp{
-  display:none; margin-left:8px; padding:3px 8px;
-  border:2px solid #b23434; color:#f2dcdc; border-radius:6px;
-  font-weight:700; font-size:.8rem;
+.badge-tile img{
+  max-height:62px; width:auto; image-rendering: pixelated;
+  filter: drop-shadow(0 3px 8px rgba(0,0,0,.4));
+  opacity: .25; transition: opacity .2s ease, transform .15s ease;
 }
-.scroll.earned .stamp{ display:inline-block; }
+.badge-tile.unlocked img{ opacity:1; }
+.badge-pop{ animation: badgePop .28s ease both; }
+@keyframes badgePop{ 0%{ transform: scale(.85); opacity:0 } 80%{ transform: scale(1.06); opacity:1 } 100%{ transform: scale(1); } }
 
-/* Persistent certificate CTA */
+/* =======================
+   CERT CTA
+   ======================= */
 .cert-download{
   width:100%; max-width:1100px; padding:12px 16px 42px; margin:0 auto; text-align:center;
 }
@@ -212,6 +198,7 @@ body{
 
 /* Accessibility */
 @media (prefers-reduced-motion: reduce){
-  .day-tile, .primary, .scroll.revealed{ transition:none; animation:none; }
+  .day-tile, .primary{ transition:none; }
   .snow-canvas{ display:none !important; }
+  .belt-visual.upgrade-available img{ animation:none; }
 }
