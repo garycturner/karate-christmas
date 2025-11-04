@@ -196,7 +196,6 @@ document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal
 // NEW: PIXEL BELT + UPGRADE LOGIC
 // ===================
 function eligibleLevel(progress) {
-  // Returns highest level the user is ELIGIBLE for based on completion against BELT_REQUIREMENTS
   for (let level = 3; level >= 1; level--) {
     const req = BELT_REQUIREMENTS[level];
     if (req.every(i => !!progress[i])) return level;
@@ -308,9 +307,8 @@ function renderBadges(progress){
     img.src = `assets/badges/badge_day${i+1}.png`;
     img.alt = unlocked ? `Badge Day ${i+1} (unlocked)` : `Badge Day ${i+1} (locked)`;
 
-    // If an image fails to load, keep a minimal placeholder so the grid is visible
     img.addEventListener("error", () => {
-      img.remove(); // hide broken image
+      img.remove();
       const ph = document.createElement("div");
       ph.style.width = "44px";
       ph.style.height = "44px";
